@@ -189,9 +189,9 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
-def get_user_data():
+async def get_user_data():
 	User = get_current_active_user()
-	usersurveydata = (session.query(UserSurveyData).filter(User.id == UserSurveyDataSQL.users_id).first())
+	usersurveydata = await (session.query(UserSurveyDataSQL).filter(User.id == UserSurveyDataSQL.users_id).first())
 	return(usersurveydata)
 
 tags=["Auth"]
@@ -246,16 +246,17 @@ async def getRecipes():
     return(session.query(Recipe).all())
 
 @app.get("/recipes/reccomended/")
-async def getRecipesforUser():
-    userdata = get_user_data()
-    calories = userdata.calorie_goal / 3
-    caloriesupper = calories + 100
-    calorieslower = calories - 100
-    ret = []
-    query = text("SELECT Limit (:userdata.num_days) * FROM recipes WHERE calories BETWEEN :calorieslower AND :caloriesupper AND id NOT IN (SELECT recipieId FROM dislikedRecipies WHERE userId = :user_id)ORDER BY NEWID()")
-    result = session.execute(query, {'user_id': userdata.user_id, 'calorieslower': calorieslower, 'caloriesupper': caloriesupper, 'num_days': userdata.num_days})
-    rows = result.mappings().all()
-    ret = [dict(row) for row in rows]
+async def getRecipesforUser(current_user: User = Depends(get_current_user)):
+    userdata = (session.query(UserSurveyDataSQL).filter(current_user.id == UserSurveyDataSQL.users_id).first())
+    if(userdata.calorie_goal != None):
+        calories = userdata.calorie_goal / 3
+        caloriesupper = calories + 100
+        calorieslower = calories - 100
+        query = text("SELECT Limit (:userdata.num_days) * FROM recipes WHERE calories BETWEEN :calorieslower AND :caloriesupper AND id NOT IN (SELECT recipieId FROM dislikedRecipies WHERE userId = :user_id)ORDER BY NEWID()")
+        result = session.execute(query, {'user_id': userdata.user_id, 'calorieslower': calorieslower, 'caloriesupper': caloriesupper, 'num_days': userdata.num_days})
+        ret = result.mappings().all()
+    else:
+        ret = None
     return (ret)
 
 

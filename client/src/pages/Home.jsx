@@ -15,9 +15,21 @@ import { CardActionArea } from '@mui/material';
 import CardMedia from '@mui/material/CardMedia';
 import DisLike from '@mui/icons-material/ThumbDownOffAlt';
 import Like from '@mui/icons-material/ThumbUpOffAlt';
+import RestAPI from '../RestAPI';
 
 function Home() {
     const [user, setUser] = React.useState();
+    const [loading, setLoading] = React.useState(false);
+    const [recipes, setRecipes] = React.useState([]);
+    const [filterText, setFilterText] = React.useState("");
+    const [surveyDoneError, setsurveyDoneError] = React.useState(false)
+
+    function unicodeToChar(text) {
+        return text.replace(/\\u[\dA-F]{4}/gi,
+            function (match) {
+                return String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16));
+            });
+    }
 
     React.useEffect(() => {
         if (sessionStorage.getItem("user") !== null) {
@@ -25,8 +37,57 @@ function Home() {
         }
     }, [])
 
+    const recipieget = () => {
+        setRecipes([]) 
+        RestAPI.getCustomRecipies().then((res) => {
+            res.data.map((resData) => {
+                setRecipes(prev => [
+                    ...prev,
+                    {
+                        id: resData.id,
+                        label: unicodeToChar(resData.title).replace(/['"]+/g, ''),
+                        thumbnail: resData.thumbnail.replace(/['"]+/g, '')
+                    }
+                ]
+                )
+
+            })
+        })
+        
+
+
+
+    }
+    const putLikedRecipie=(id) =>{
+        if (sessionStorage.getItem("user") !== null) {
+            const user = JSON.parse(window.sessionStorage.getItem("user"));
+            RestAPI.putLikedRecipie(user.id, id)
+        }else{
+            alert("Must be logged in");
+            return;
+        }
+
+        
+    }
+
+    const putDislikedRecipie=(id) =>{
+        if (sessionStorage.getItem("user") !== null) {
+            const user = JSON.parse(window.sessionStorage.getItem("user"));
+            RestAPI.putDislikedRecipie(user.id, id)
+            console.log(user)
+        }else{
+            alert("Must be logged in");
+            return;
+        }
+        
+    }
+    
+    
+
 
     if (user) {
+        recipieget()
+        if (recipes.length === 0) {
         return (
             <div>
                 <div className='home' style={{ backgroundImage: `url(${BannerImage})` }}>
@@ -78,6 +139,49 @@ function Home() {
                 </div>
             </div>
         )
+    }else{
+        <Grid style={{ marginTop: "20px", marginBottom: "20px" }}>
+            <Grid container>
+                <Grid item xs={12} style={{ marginTop: "20px", marginBottom: "20px" }}>
+                    <Card variant='outlined' style={{ width: '80%', padding: "20px 5px ", margin: "0 auto" }}>
+                        <Grid container spacing={2} direction="row" >
+                            {recipes.map((recipe) => (
+                                <Grid item xs={6} sm={6} ms={4}>
+                                                
+                                    <Card sx={{ maxWidth: 550, maxHeight: 600 }} style={{ width: '100%', margin: '10px' }}>
+                                        <CardActionArea >
+                                        <Link to={`/recipe/${recipe.id}`}>
+                                            <CardHeader
+                                                title={recipe.label}
+                                            />
+                                            </Link>
+                                            <CardContent alignItems='center' >
+                                            <CardMedia
+                                                    square='false'
+                                                    component="img"
+                                                    height="200"
+                                                    image={recipe.thumbnail} />
+                                                                
+                                                <CardActions>
+                                                    <IconButton onClick={() => putLikedRecipie(recipe.id)}>
+                                                        <Like />
+                                                    </IconButton>
+                                                    <IconButton onClick={() => putDislikedRecipie(recipe.id)}>
+                                                        <DisLike />
+                                                    </IconButton>
+                                                </CardActions>
+                                            </CardContent>
+                                        </CardActionArea>
+                                    </Card>
+                                                
+                                </Grid>
+                            ))}
+                        </Grid>
+                    </Card>
+                </Grid>
+            </Grid>
+        </Grid>
+    }
     } else {
 
 
