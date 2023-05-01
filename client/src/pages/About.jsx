@@ -45,7 +45,7 @@ function About() {
 
                 </p>
                 <p>
-                    2. Meal Planning Tools - Our meal planning tools allow you to create personalized meal plans that meet your specific dietary needs and preferences.
+                    2.Meal Planning Tools - Our meal planning tools allow you to create personalized meal plans that meet your specific dietary needs and preferences.
 
                 </p>
                 <p>
@@ -113,7 +113,7 @@ function About() {
 
                                 </Typography>
                                 <Typography>
-                                    4. Make your grocery list (Eatwell101's Meal Planner helps you do that!). Take into account what you already have in your pantry or fridge.
+                                    4.Make your grocery list (Eatwell101's Meal Planner helps you do that!). Take into account what you already have in your pantry or fridge.
 
                                 </Typography>
                                 <Typography>

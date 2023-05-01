@@ -189,9 +189,9 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
-def get_user_data():
+async def get_user_data():
 	User = get_current_active_user()
-	usersurveydata = (session.query(UserSurveyData).filter(User.id == UserSurveyDataSQL.users_id).first())
+	usersurveydata = await (session.query(UserSurveyDataSQL).filter(User.id == UserSurveyDataSQL.users_id).first())
 	return(usersurveydata)
 
 tags=["Auth"]
@@ -277,17 +277,29 @@ async def getRecipes():
     "GROUP BY recipe.id")
     return(session.execute(query))
 
-@app.get("/recipes/reccomended/")
-async def getRecipesforUser():
-    userdata = get_user_data()
-    calories = userdata.calorie_goal / 3
-    caloriesupper = calories + 100
-    calorieslower = calories - 100
-    ret = []
-    query = text("SELECT Limit (:userdata.num_days) * FROM recipes WHERE calories BETWEEN :calorieslower AND :caloriesupper AND id NOT IN (SELECT recipieId FROM dislikedRecipies WHERE userId = :user_id)ORDER BY NEWID()")
-    result = session.execute(query, {'user_id': userdata.user_id, 'calorieslower': calorieslower, 'caloriesupper': caloriesupper, 'num_days': userdata.num_days})
-    rows = result.mappings().all()
-    ret = [dict(row) for row in rows]
+@app.get("/recipes/reccomended/{username}")
+async def getRecipesforUser(username : str):
+    current_user = get_user(username)
+    userdata = (session.query(UserSurveyDataSQL).filter(current_user.id == UserSurveyDataSQL.users_id).first())
+    ret = None
+    if(userdata != None):
+        if(userdata.calorie_goal != None):
+            calories = userdata.calorie_goal / 3
+            print(calories)
+            if(calories < 400):
+                calories = 400
+            if(calories > 1400):
+                calories = 1400
+            caloriesupper = calories + 100
+            calorieslower = calories - 100
+            query = text("SELECT  * FROM recipe WHERE nutrition REGEXP '\"calories\":[9][0-9]{2}|1[0-1][0-9]{2}' \
+                         AND JSON_EXTRACT(nutrition, '$.calories') BETWEEN :calorieslower AND :caloriesupper \
+                         AND id NOT IN (SELECT recipieId FROM dislikedRecipies WHERE userId = :user_id) \
+                         ORDER BY RAND() Limit (:userdata.num_days);")
+            result = session.execute(query, {'user_id': userdata.user_id, 'calorieslower': calorieslower, 'caloriesupper': caloriesupper, 'num_days': userdata.num_days})
+            ret = result.mappings().all()
+    else:
+        ret = None
     return (ret)
 
 

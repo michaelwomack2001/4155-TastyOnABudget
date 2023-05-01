@@ -32,9 +32,10 @@ const SignUp = () => {
                         sessionStorage.setItem("token", token)
                         const user = jwt(sessionStorage.getItem("token"));
                         sessionStorage.setItem("user", JSON.stringify(user));
+                        console.log(user)
                         window.location.assign("/home");
                     })
-                }).catch(err => {
+                }).catch(err => { 
                     if (err["response"]["status"] === 400) {
                         setUserNameError(true)
                         alert("Username Taken")
