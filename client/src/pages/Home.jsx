@@ -39,7 +39,7 @@ function Home() {
 
     const recipieget = () => {
         setRecipes([]) 
-        RestAPI.getCustomRecipies().then((res) => {
+        RestAPI.getCustomRecipies(user.username).then((res) => {
             res.data.map((resData) => {
                 setRecipes(prev => [
                     ...prev,
@@ -140,6 +140,7 @@ function Home() {
             </div>
         )
     }else{
+        return (
         <Grid style={{ marginTop: "20px", marginBottom: "20px" }}>
             <Grid container>
                 <Grid item xs={12} style={{ marginTop: "20px", marginBottom: "20px" }}>
@@ -181,10 +182,10 @@ function Home() {
                 </Grid>
             </Grid>
         </Grid>
+        )
     }
+
     } else {
-
-
         return (
             <div>
                 <div className='home' style={{ backgroundImage: `url(${BannerImage})` }}>

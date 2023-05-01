@@ -245,16 +245,18 @@ async def read_own_items(current_user: User = Depends(get_current_active_user)):
 async def getRecipes():
     return(session.query(Recipe).all())
 
-@app.get("/recipes/reccomended/")
-async def getRecipesforUser(current_user: User = Depends(get_current_user)):
+@app.get("/recipes/reccomended/{username}")
+async def getRecipesforUser(username : str):
+    current_user = get_user(username)
     userdata = (session.query(UserSurveyDataSQL).filter(current_user.id == UserSurveyDataSQL.users_id).first())
-    if(userdata.calorie_goal != None):
-        calories = userdata.calorie_goal / 3
-        caloriesupper = calories + 100
-        calorieslower = calories - 100
-        query = text("SELECT Limit (:userdata.num_days) * FROM recipes WHERE calories BETWEEN :calorieslower AND :caloriesupper AND id NOT IN (SELECT recipieId FROM dislikedRecipies WHERE userId = :user_id)ORDER BY NEWID()")
-        result = session.execute(query, {'user_id': userdata.user_id, 'calorieslower': calorieslower, 'caloriesupper': caloriesupper, 'num_days': userdata.num_days})
-        ret = result.mappings().all()
+    if(userdata != None):
+        if(userdata.calorie_goal != None):
+            calories = userdata.calorie_goal / 3
+            caloriesupper = calories + 100
+            calorieslower = calories - 100
+            query = text("SELECT Limit (:userdata.num_days) * FROM recipes WHERE calories BETWEEN :calorieslower AND :caloriesupper AND id NOT IN (SELECT recipieId FROM dislikedRecipies WHERE userId = :user_id)ORDER BY NEWID()")
+            result = session.execute(query, {'user_id': userdata.user_id, 'calorieslower': calorieslower, 'caloriesupper': caloriesupper, 'num_days': userdata.num_days})
+            ret = result.mappings().all()
     else:
         ret = None
     return (ret)
