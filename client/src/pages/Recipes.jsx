@@ -30,7 +30,7 @@ const Recipes = () => {
 
     const handleSearch = () => {
         setRecipes([])
-        if (tagOrTitle) {
+        if(tagOrTitle){
             RestAPI.getRecipesSearchTitle(filterText).then((res) => {
                 res.data.map((resData) => {
                     setRecipes(prev => [
@@ -42,7 +42,7 @@ const Recipes = () => {
                         }
                     ]
                     )
-
+    
                 })
             })
         } else if (!tagOrTitle) {
@@ -57,47 +57,26 @@ const Recipes = () => {
                         }
                     ]
                     )
-
+    
                 })
             })
-        }
-
-        if (recipes.length === 0) {
+        } 
+        
+        if (recipes.length===0){
             setTextFieldError(true)
             alert("ERROR ENTER A CORRECT SEARCH TERM AND OR SELECT A TAG")
         } else {
             setTextFieldError(false)
         }
-
-    }
-    const putLikedRecipie=(id) =>{
-        if (sessionStorage.getItem("user") !== null) {
-            const user = JSON.parse(window.sessionStorage.getItem("user"));
-            RestAPI.putLikedRecipie(user.id, id)
-        }else{
-            alert("Must be logged in");
-            return;
-        }
-
-        
+       
     }
 
-    const putDislikedRecipie=(id) =>{
-        if (sessionStorage.getItem("user") !== null) {
-            const user = JSON.parse(window.sessionStorage.getItem("user"));
-            RestAPI.putDislikedRecipie(user.id, id)
-            console.log(user)
-        }else{
-            alert("Must be logged in");
-            return;
-        }
-        
-    }
+
     return (
         <div >
             <Grid style={{ marginTop: "20px", marginBottom: "750px" }}>
                 <h1> What are you craving today?</h1>
-                <div style={{ paddingTop: '5px', paddingLeft: '90px', justifySelf: "center", flexDirection: "row" }}>
+                <div style={{ paddingTop: '5px', paddingLeft: '90px', justifySelf: "center", flexDirection:"row"}}>
                     <TextField
                         style={{ width: "60%" }}
                         onChange={(e) => {
@@ -106,7 +85,7 @@ const Recipes = () => {
                         error={textFieldError}
                     />
                     <Select
-                        style={{ width: "10%", margin: "5px 5px 5px 5px" }}
+                        style={{ width: "10%", margin:"5px 5px 5px 5px" }}
                         onChange={(e) => {
                             setTagOrTitle(e.target.value);
                             console.log(tagOrTitle)
@@ -129,33 +108,30 @@ const Recipes = () => {
                                     <Grid container spacing={2} direction="row" >
                                         {recipes.map((recipe) => (
                                             <Grid item xs={6} sm={6} ms={4}>
-                                                
+                                                <Link to={`/recipe/${recipe.id}`}>
                                                 <Card sx={{ maxWidth: 550, maxHeight: 600 }} style={{ width: '100%', margin: '10px' }}>
                                                     <CardActionArea >
-                                                    <Link to={`/recipe/${recipe.id}`}>
                                                         <CardHeader
                                                             title={recipe.label}
                                                         />
-                                                        </Link>
                                                         <CardContent alignItems='center' >
                                                             <CardMedia
                                                                 square='false'
                                                                 component="img"
                                                                 height="200"
                                                                 image={recipe.thumbnail} />
-                                                                
                                                             <CardActions>
-                                                                <IconButton onClick={() => putLikedRecipie(recipe.id)}>
+                                                                <IconButton >
                                                                     <Like />
                                                                 </IconButton>
-                                                                <IconButton onClick={() => putDislikedRecipie(recipe.id)}>
+                                                                <IconButton >
                                                                     <DisLike />
                                                                 </IconButton>
                                                             </CardActions>
                                                         </CardContent>
                                                     </CardActionArea>
                                                 </Card>
-                                                
+                                                </Link>
                                             </Grid>
                                         ))}
                                     </Grid>

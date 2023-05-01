@@ -31,33 +31,39 @@ function Home() {
             });
     }
 
+    
+
     React.useEffect(() => {
         if (sessionStorage.getItem("user") !== null) {
             setUser(JSON.parse(window.sessionStorage.getItem("user")));
         }
+        const recipieget = () => {
+            setRecipes([]) 
+            RestAPI.getCustomRecipies(user.username).then((res) => {
+                res.data.map((resData) => {
+                    setRecipes(prev => [
+                        ...prev,
+                        {
+                            id: resData.id,
+                            label: unicodeToChar(resData.title).replace(/['"]+/g, ''),
+                            thumbnail: resData.thumbnail.replace(/['"]+/g, '')
+                        }
+                    ]
+                    )
+    
+                })
+            })}
+        if(user){
+            recipieget(user)
+        }
     }, [])
 
-    const recipieget = () => {
-        setRecipes([]) 
-        RestAPI.getCustomRecipies(user.username).then((res) => {
-            res.data.map((resData) => {
-                setRecipes(prev => [
-                    ...prev,
-                    {
-                        id: resData.id,
-                        label: unicodeToChar(resData.title).replace(/['"]+/g, ''),
-                        thumbnail: resData.thumbnail.replace(/['"]+/g, '')
-                    }
-                ]
-                )
-
-            })
-        })
+    
         
 
 
 
-    }
+    
     const putLikedRecipie=(id) =>{
         if (sessionStorage.getItem("user") !== null) {
             const user = JSON.parse(window.sessionStorage.getItem("user"));
@@ -86,8 +92,6 @@ function Home() {
 
 
     if (user) {
-        recipieget()
-        if (recipes.length === 0) {
         return (
             <div>
                 <div className='home' style={{ backgroundImage: `url(${BannerImage})` }}>
@@ -134,58 +138,58 @@ function Home() {
                         <Typography gutterBottom variant="h3" align="left" sx={{ fontWeight: 'bold', color: '#7A562E' }} >
                             This Weeks Meals
                         </Typography>
+                        <div>
+                    <Grid style={{ marginTop: "20px", marginBottom: "20px" }}>
+                        <Grid container>
+                            <Grid item xs={12} style={{ marginTop: "20px", marginBottom: "20px" }}>
+                                <Card variant='outlined' style={{ width: '80%', padding: "20px 5px ", margin: "0 auto" }}>
+                                    <Grid container spacing={2} direction="row" >
+                                        {recipes.map((recipe) => (
+                                            <Grid item xs={6} sm={6} ms={4}>
+                                                
+                                                <Card sx={{ maxWidth: 550, maxHeight: 600 }} style={{ width: '100%', margin: '10px' }}>
+                                                    <CardActionArea >
+                                                    <Link to={`/recipe/${recipe.id}`}>
+                                                        <CardHeader
+                                                            title={recipe.label}
+                                                        />
+                                                        </Link>
+                                                        <CardContent alignItems='center' >
+                                                            <CardMedia
+                                                                square='false'
+                                                                component="img"
+                                                                height="200"
+                                                                image={recipe.thumbnail} />
+                                                                
+                                                            <CardActions>
+                                                                <IconButton onClick={() => putLikedRecipie(recipe.id)}>
+                                                                    <Like />
+                                                                </IconButton>
+                                                                <IconButton onClick={() => putDislikedRecipie(recipe.id)}>
+                                                                    <DisLike />
+                                                                </IconButton>
+                                                            </CardActions>
+                                                        </CardContent>
+                                                    </CardActionArea>
+                                                </Card>
+                                                
+                                            </Grid>
+                                        ))}
+                                    </Grid>
+                                </Card>
+                            </Grid>
+                        </Grid>
+                    </Grid>
 
+
+                </div>
                     </Grid>
                 </div>
             </div>
         )
-    }else{
-        return (
-        <Grid style={{ marginTop: "20px", marginBottom: "20px" }}>
-            <Grid container>
-                <Grid item xs={12} style={{ marginTop: "20px", marginBottom: "20px" }}>
-                    <Card variant='outlined' style={{ width: '80%', padding: "20px 5px ", margin: "0 auto" }}>
-                        <Grid container spacing={2} direction="row" >
-                            {recipes.map((recipe) => (
-                                <Grid item xs={6} sm={6} ms={4}>
-                                                
-                                    <Card sx={{ maxWidth: 550, maxHeight: 600 }} style={{ width: '100%', margin: '10px' }}>
-                                        <CardActionArea >
-                                        <Link to={`/recipe/${recipe.id}`}>
-                                            <CardHeader
-                                                title={recipe.label}
-                                            />
-                                            </Link>
-                                            <CardContent alignItems='center' >
-                                            <CardMedia
-                                                    square='false'
-                                                    component="img"
-                                                    height="200"
-                                                    image={recipe.thumbnail} />
-                                                                
-                                                <CardActions>
-                                                    <IconButton onClick={() => putLikedRecipie(recipe.id)}>
-                                                        <Like />
-                                                    </IconButton>
-                                                    <IconButton onClick={() => putDislikedRecipie(recipe.id)}>
-                                                        <DisLike />
-                                                    </IconButton>
-                                                </CardActions>
-                                            </CardContent>
-                                        </CardActionArea>
-                                    </Card>
-                                                
-                                </Grid>
-                            ))}
-                        </Grid>
-                    </Card>
-                </Grid>
-            </Grid>
-        </Grid>
-        )
-    }
-
     } else {
+
+
         return (
             <div>
                 <div className='home' style={{ backgroundImage: `url(${BannerImage})` }}>
